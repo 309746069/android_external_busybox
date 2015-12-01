@@ -461,6 +461,9 @@ typedef unsigned smalluint;
 # ifndef BIONIC_L
 #  undef HAVE_STPCPY
 # endif
+/* FAST_FUNC conflicts with some bionic definitions on AOSP 6.0 sync (x86) */
+# undef FAST_FUNC
+# define FAST_FUNC
 #endif
 
 /*
