@@ -1016,6 +1016,9 @@ static const char tar_longopts[] ALIGN1 =
 int tar_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
 int tar_main(int argc UNUSED_PARAM, char **argv)
 {
+	setbuf(stdout, NULL);
+	setbuf(stderr, NULL);
+
 	archive_handle_t *tar_handle;
 	char *base_dir = NULL;
 	const char *tar_filename = "-";
