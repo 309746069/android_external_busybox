@@ -6,6 +6,22 @@
 #include "libbb.h"
 #include "bb_archive.h"
 
+#if defined(ENABLE_FEATURE_TAR_SELINUX) && defined(__BIONIC__) && defined(__ANDROID__)
+
+#include <sys/syscall.h>
+
+#define XATTR_SELINUX "security.selinux"
+
+inline int lsetxattr(const char *path, const char *name, const void *value, size_t size, int flags) {
+	return (int)syscall(__NR_lsetxattr, (uintptr_t)path, (uintptr_t)name, (uintptr_t)value, (uintptr_t)size, (uintptr_t)flags);
+}
+
+inline int lsetcon(const char *path, const char *context) {
+	return lsetxattr(path, XATTR_SELINUX, context, strlen(context), 0);
+}
+
+#endif
+
 void FAST_FUNC data_extract_all(archive_handle_t *archive_handle)
 {
 	file_header_t *file_header = archive_handle->file_header;
@@ -205,6 +221,10 @@ void FAST_FUNC data_extract_all(archive_handle_t *archive_handle)
 			utimes(file_header->name, t);
 		}
 	}
+
+#if defined(ENABLE_FEATURE_TAR_SELINUX) && defined(__BIONIC__) && defined(__ANDROID__)
+	if (sctx) lsetcon(file_header->name, sctx);
+#endif
 
  ret: ;
 #if ENABLE_FEATURE_TAR_SELINUX
